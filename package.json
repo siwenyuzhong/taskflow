@@ -1,0 +1,17 @@
+{
+  "name": "taskflow",
+  "productName": "Sloth",
+  "version": "2026.10.22-1",
+  "description": "Sloth — 优雅的任务管理清单，支持定时到期提醒、一键续时长与任务分类",
+  "author": {
+    "name": "Chen Weiyong",
+    "email": "hello@pengcheng.info"
+  },
+  "license": "MIT",
+  "private": true,
+  "main": "electron/main.cjs",
+  "dependencies": {
+    "ffmpeg-static": "^5.3.0",
+    "sherpa-onnx-node": "^1.13.8"
+  }
+}

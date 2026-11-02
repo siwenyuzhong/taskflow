@@ -1,0 +1,930 @@
+/* ==========================================================================
+   TaskFlow · 设计令牌与基础样式
+   字体：Sora（展示）/ Manrope（正文）/ JetBrains Mono（倒计时数字）
+   全部 woff2 已本地打包，运行时不依赖网络。
+   ========================================================================== */
+
+/* Sora / Manrope / JetBrains Mono 均为可变字体，单文件覆盖 400–700 字重 */
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('./fonts/Sora-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('./fonts/Manrope-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('./fonts/JetBrainsMono-latin.woff2') format('woff2');
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* --------------------------------------------------------------------------
+   语义化主题令牌
+   70-20-10：主色（暗夜靛）70% / 次色（品红紫）20% / 点缀（青、琥珀）10%
+   -------------------------------------------------------------------------- */
+
+:root,
+[data-theme='dark'] {
+  --ink-950: #06060d;
+  --ink-900: #0a0a14;
+  --ink-800: #10101d;
+  --ink-700: #191927;
+
+  --text-1: rgba(244, 244, 255, 0.95);
+  --text-2: rgba(230, 230, 250, 0.62);
+  --text-3: rgba(215, 215, 240, 0.36);
+
+  --surface: rgba(255, 255, 255, 0.045);
+  --surface-2: rgba(255, 255, 255, 0.075);
+  --line: rgba(255, 255, 255, 0.09);
+
+  --accent: #7c5cff;
+  --accent-soft: rgba(124, 92, 255, 0.16);
+  --accent-glow: rgba(124, 92, 255, 0.5);
+  --accent-fg: #ffffff;
+
+  --cy: #2ee6d6;
+  --warn: #f5a524;
+  --danger: #ff5c7a;
+  --ok: #34d399;
+  /* 周六/周日日期区域：黄底 + 琥珀强调色（深色底需要更高浓度才显色） */
+  --weekend-soft: rgba(251, 191, 36, 0.4);
+  --weekend-accent: #fbbf24;
+  /* 已过去的日期格：灰色底 */
+  --past-soft: rgba(148, 163, 184, 0.18);
+  /* 已过去的周六/周日：淡黄底，与当前周末的明显黄色区分 */
+  --weekend-faint: rgba(251, 191, 36, 0.16);
+
+  --orb-a: rgba(124, 92, 255, 0.42);
+  --orb-b: rgba(46, 230, 214, 0.26);
+  --orb-c: rgba(255, 92, 122, 0.18);
+  --noise-opacity: 0.045;
+  --shadow-color: 0 0 0;
+
+  /* 「工作速录」(SpeedRec) 语义令牌 —— rgb 三元组，供 sr-* 工具类使用 */
+  --c-base: 10 11 14;
+  --c-surface: 17 19 24;
+  --c-elevated: 23 26 33;
+  --c-canvas: 13 15 19;
+  --c-line: 35 39 47;
+  --c-ink: 231 233 238;
+  --c-ink-muted: 154 161 173;
+  --c-ink-faint: 93 100 112;
+  --c-accent: 109 139 255;
+  --c-accent-strong: 139 163 255;
+  --c-accent-soft: rgba(109, 139, 255, 0.14);
+  --c-rec: 255 90 95;
+  --c-rec-soft: rgba(255, 90, 95, 0.14);
+  --c-warn: 252 211 77;
+  --c-warn-soft: rgba(251, 191, 36, 0.12);
+  --ws-wave: 57 64 77;
+}
+
+[data-theme='light'] {
+  --ink-950: #ecebf4;
+  --ink-900: #f5f4fa;
+  --ink-800: #ffffff;
+  --ink-700: #ffffff;
+
+  --text-1: rgba(20, 17, 40, 0.93);
+  --text-2: rgba(28, 24, 55, 0.62);
+  --text-3: rgba(28, 24, 55, 0.42);
+
+  --surface: rgba(255, 255, 255, 0.72);
+  --surface-2: rgba(255, 255, 255, 0.92);
+  --line: rgba(24, 18, 60, 0.1);
+
+  --accent: #6338ff;
+  --accent-soft: rgba(99, 56, 255, 0.12);
+  --accent-glow: rgba(99, 56, 255, 0.32);
+  --accent-fg: #ffffff;
+
+  --cy: #0ea5a5;
+  --warn: #d97706;
+  --danger: #e11d48;
+  --ok: #059669;
+  /* 周六/周日日期区域：黄底 + 琥珀强调色 */
+  --weekend-soft: rgba(250, 204, 21, 0.3);
+  --weekend-accent: #b45309;
+  /* 已过去的日期格：灰色底 */
+  --past-soft: rgba(128, 138, 155, 0.22);
+  /* 已过去的周六/周日：淡黄底，与当前周末的明显黄色区分 */
+  --weekend-faint: rgba(250, 204, 21, 0.14);
+
+  --orb-a: rgba(124, 92, 255, 0.28);
+  --orb-b: rgba(46, 200, 190, 0.2);
+  --orb-c: rgba(255, 130, 150, 0.16);
+  --noise-opacity: 0.03;
+
+  /* 「工作速录」(SpeedRec) 语义令牌 —— rgb 三元组，供 sr-* 工具类使用 */
+  --c-base: 245 246 248;
+  --c-surface: 255 255 255;
+  --c-elevated: 238 240 243;
+  --c-canvas: 239 241 245;
+  --c-line: 223 226 232;
+  --c-ink: 28 31 38;
+  --c-ink-muted: 88 95 107;
+  --c-ink-faint: 150 157 168;
+  --c-accent: 79 110 247;
+  --c-accent-strong: 59 91 219;
+  --c-accent-soft: rgba(79, 110, 247, 0.1);
+  --c-rec: 229 72 77;
+  --c-rec-soft: rgba(229, 72, 77, 0.1);
+  --c-warn: 176 84 10;
+  --c-warn-soft: rgba(180, 83, 9, 0.1);
+  --ws-wave: 190 198 212;
+}
+
+/* -------------------------------------------------------------------------- */
+
+@layer base {
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    font-family: theme('fontFamily.sans');
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text-1);
+    background: var(--ink-950);
+    overflow: hidden;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: theme('fontFamily.display');
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--accent-fg);
+  }
+
+  :focus {
+    outline: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  input,
+  textarea,
+  button,
+  select {
+    font: inherit;
+    color: inherit;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--text-3);
+  }
+
+  /* 细腻滚动条 */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--text-3) 55%, transparent);
+    border: 3px solid transparent;
+    background-clip: content-box;
+    border-radius: 99px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in srgb, var(--text-2) 60%, transparent);
+    background-clip: content-box;
+  }
+}
+
+@layer components {
+  /* ---- 玻璃拟态 ---------------------------------------------------------- */
+  .glass {
+    background: linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--surface-2) 88%, transparent) 0%,
+      var(--surface) 100%
+    );
+    /* 大半径 backdrop-filter 在滚动/重绘时非常吃 GPU，12px 已足够出玻璃感 */
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    border: 1px solid var(--line);
+  }
+
+  .glass-quiet {
+    background: var(--surface);
+    backdrop-filter: blur(10px) saturate(140%);
+    -webkit-backdrop-filter: blur(10px) saturate(140%);
+    border: 1px solid var(--line);
+  }
+
+  /* 卡片顶部高光，制造"玻璃厚度" */
+  .sheen::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, var(--text-1) 22%, transparent),
+      transparent
+    );
+    pointer-events: none;
+  }
+
+  /* ---- 按钮 ------------------------------------------------------------- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0 1rem;
+    border-radius: 14px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    white-space: nowrap;
+    border: 1px solid transparent;
+    transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1), background 0.16s ease,
+      border-color 0.16s ease, box-shadow 0.16s ease, color 0.16s ease;
+    cursor: pointer;
+    user-select: none;
+  }
+  .btn:active {
+    transform: scale(0.97);
+  }
+  .btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 62%, var(--cy)) 100%);
+    color: var(--accent-fg);
+    box-shadow: 0 14px 34px -16px var(--accent-glow);
+  }
+  .btn-primary:hover {
+    box-shadow: 0 20px 44px -16px var(--accent-glow);
+    filter: brightness(1.06);
+  }
+
+  .btn-ghost {
+    background: var(--surface);
+    border-color: var(--line);
+    color: var(--text-2);
+  }
+  .btn-ghost:hover {
+    background: var(--surface-2);
+    color: var(--text-1);
+    border-color: color-mix(in srgb, var(--text-2) 30%, transparent);
+  }
+
+  .btn-icon {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    border-radius: 12px;
+    background: transparent;
+    color: var(--text-3);
+    border: 1px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.16s ease;
+  }
+  .btn-icon:hover {
+    background: var(--surface-2);
+    color: var(--text-1);
+  }
+  .btn-icon:active {
+    transform: scale(0.94);
+  }
+
+  /* ---- 输入 ------------------------------------------------------------- */
+  .field {
+    width: 100%;
+    min-height: 44px;
+    padding: 0.65rem 0.9rem;
+    border-radius: 13px;
+    background: color-mix(in srgb, var(--ink-900) 55%, transparent);
+    border: 1px solid var(--line);
+    color: var(--text-1);
+    transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+  }
+  .field:hover {
+    border-color: color-mix(in srgb, var(--text-3) 60%, transparent);
+  }
+  .field:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+    background: color-mix(in srgb, var(--ink-900) 78%, transparent);
+  }
+
+  /* 标签 */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    height: 26px;
+    padding: 0 0.625rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+
+  /* 骨架微光 */
+  .sheen-bar {
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, var(--text-1) 16%, transparent),
+      transparent
+    );
+    background-size: 200% 100%;
+  }
+
+  /* ---- 快速创建输入区 ---------------------------------------------------- */
+  .quick-shell {
+    transition: border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
+  }
+  .quick-shell:focus-within {
+    border-color: color-mix(in srgb, var(--accent) 52%, transparent);
+    box-shadow: 0 0 0 4px var(--accent-soft), 0 26px 60px -34px var(--accent-glow);
+  }
+  .quick-shell.is-flash {
+    animation: quick-flash 0.72s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .quick-shell.is-shake {
+    animation: quick-shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+  }
+
+  /* 可选 chip（可点选的筛选标签） */
+  .chip-btn {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.25rem;
+    height: 30px;
+    padding: 0 0.625rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--text-2);
+    cursor: pointer;
+    transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease, transform 0.12s ease;
+  }
+  .chip-btn:hover {
+    background: var(--surface-2);
+    color: var(--text-1);
+  }
+  .chip-btn:active {
+    transform: scale(0.95);
+  }
+
+  /* 选中态：主色描边 + 柔和底色 */
+  .chip-btn-on,
+  .chip-btn-on:hover {
+    background: var(--accent-soft);
+    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+    color: var(--accent);
+  }
+
+  /* 即将到期脉冲：用透明度环替代 box-shadow 动画，走合成器、不触发大卡片每帧重绘 */
+  .pulse-warn {
+    position: relative;
+  }
+  .pulse-warn::after {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    border-radius: inherit;
+    border: 1.5px solid color-mix(in srgb, var(--warn) 62%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    animation: ring-pulse 2s ease-out infinite;
+  }
+
+  /* 触屏设备放大到 44px，保证可点性 */
+  @media (pointer: coarse) {
+    .chip-btn {
+      height: 44px;
+      padding: 0 0.9rem;
+      font-size: 0.8125rem;
+    }
+  }
+}
+
+@keyframes ring-pulse {
+  0% {
+    opacity: 0;
+  }
+  35% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes quick-flash {
+  0% {
+    border-color: color-mix(in srgb, var(--ok) 70%, transparent);
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--ok) 18%, transparent);
+  }
+  100% {
+    border-color: var(--line);
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+@keyframes quick-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-7px);
+  }
+  40% {
+    transform: translateX(6px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   回收站动效
+   shatter-fly：碎片从左到右飘散、翻转、缩小并淡出（永久删除）
+   -------------------------------------------------------------------------- */
+/* 前半程保持清晰、缓慢漂移，后半程才渐渐淡出——"慢慢的飘散至消失"
+   只动画 transform / opacity（合成器友好），百来块碎片也能保持流畅 */
+@keyframes shatter-fly {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+  38% {
+    opacity: 0.96;
+    transform: translate3d(calc(var(--dx, 80px) * 0.42), calc(var(--dy, 0px) * 0.34), 0)
+      rotate(calc(var(--rot, 16deg) * 0.3)) scale(0.94);
+  }
+  68% {
+    opacity: 0.52;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--dx, 80px), var(--dy, 0px), 0) rotate(var(--rot, 16deg))
+      scale(var(--sc, 0.6));
+  }
+}
+
+/* shatter-pop：清空回收站时，碎片从画面中心一小团开始，按「内圈→外圈」的
+   顺序不断增多、向外散开，最后铺满整个应用窗口（每块尺寸/角度/落点随机） */
+@keyframes shatter-pop {
+  0% {
+    opacity: 0;
+    transform: translate3d(calc(var(--tx, 0px) * 0.28), calc(var(--ty, 0px) * 0.28), 0)
+      rotate(0deg) scale(calc(var(--sc, 1) * 0.55));
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(var(--tx, 0px), var(--ty, 0px), 0)
+      rotate(var(--rot, 14deg)) scale(var(--sc, 1));
+  }
+}
+
+/* shatter-layer-fade：铺满后，整层碎片一起缓缓淡出消失 */
+@keyframes shatter-layer-fade {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* bin-collapse：卡片被"收进"回收站（软删除），向左下方塌陷淡出 */
+@keyframes bin-collapse {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0);
+  }
+  55% {
+    opacity: 0.8;
+    transform: translate3d(-14px, 4px, 0) scale(0.94);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-34px, 8px, 0) scale(0.8);
+    filter: blur(5px);
+  }
+}
+
+.trash-leave {
+  animation: bin-collapse 0.55s cubic-bezier(0.4, 0, 0.22, 1) both;
+  pointer-events: none;
+}
+
+@layer utilities {
+  /* 语义化文字层级 */
+  .t1 {
+    color: var(--text-1);
+  }
+  .t2 {
+    color: var(--text-2);
+  }
+  .t3 {
+    color: var(--text-3);
+  }
+
+  .drag-region {
+    -webkit-app-region: drag;
+  }
+  .no-drag {
+    -webkit-app-region: no-drag;
+  }
+  .tnum {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+  }
+  /* 「工作速录」等宽数字（对齐 autoRec 的 .tabular 命名） */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .text-glow {
+    text-shadow: 0 0 28px var(--accent-glow);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   工作清单（电子表格）
+   表格用 border-separate，配合 position:sticky 实现"冻结行列"
+   -------------------------------------------------------------------------- */
+.sheet-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: auto;
+}
+
+.grid-scroll {
+  scrollbar-width: thin;
+  scrollbar-gutter: stable;
+}
+
+.sheet-cell {
+  height: 32px;
+  padding: 0;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  transition: background 0.12s ease;
+}
+.sheet-cell:hover:not(:has(.sheet-input)) {
+  background: var(--surface-2);
+}
+.sheet-selected {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+.sheet-selected:hover:not(:has(.sheet-input)) {
+  background: var(--surface);
+}
+
+.sheet-display {
+  height: 32px;
+  padding: 0 10px;
+  line-height: 32px;
+  font-size: 13px;
+  color: var(--text-1);
+  min-width: 0;
+  max-width: 100%;
+  cursor: cell;
+  user-select: none;
+}
+
+.sheet-input {
+  display: block;
+  width: 100%;
+  height: 32px;
+  padding: 0 10px;
+  font-size: 13px;
+  line-height: 32px;
+  color: var(--text-1);
+  caret-color: var(--accent);
+  background: transparent;
+  border: none;
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent) inset;
+  border-radius: 0;
+}
+
+.sheet-header-cell {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding: 0;
+  height: 32px;
+  background: var(--surface-2);
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  text-align: center;
+  user-select: none;
+  cursor: pointer;
+}
+.sheet-header-cell:hover {
+  background: color-mix(in srgb, var(--accent) 22%, var(--surface-2));
+}
+/* 整列选中：列标高亮 */
+.sheet-header-cell-active,
+.sheet-header-cell-active:hover {
+  background: var(--accent);
+}
+
+.sheet-corner {
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 50;
+  padding: 0;
+  height: 32px;
+  background: var(--surface-2);
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  text-align: center;
+  user-select: none;
+}
+
+.sheet-rowhead {
+  position: sticky;
+  left: 0;
+  z-index: 10;
+  min-width: 40px;
+  padding: 0;
+  height: 32px;
+  background: var(--surface-2);
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  text-align: center;
+  user-select: none;
+  cursor: pointer;
+}
+.sheet-rowhead:hover {
+  background: color-mix(in srgb, var(--accent) 22%, var(--surface-2));
+}
+/* 整行选中：行号高亮 */
+.sheet-rowhead-active,
+.sheet-rowhead-active:hover {
+  background: var(--accent);
+}
+/* 整行选中：用内阴影叠一层色调，不覆盖单元格自身的底色 */
+.sheet-row-selected {
+  box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+/* 拖拽框选区域：更浅一层色调 */
+.sheet-in-rect {
+  box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--accent) 9%, transparent);
+}
+.sheet-display {
+  user-select: none;
+}
+/* 多行内容：自动换行，行高随内容撑开 */
+.sheet-display.sheet-multiline {
+  height: auto;
+  min-height: 32px;
+  line-height: 20px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+/* 编辑态用 textarea：⌘+Enter 换行，高度随内容增长 */
+.sheet-editing textarea.sheet-input {
+  height: auto;
+  min-height: 32px;
+  line-height: 20px;
+  padding: 6px 10px;
+  resize: none;
+  overflow: hidden;
+}
+
+.sheet-resize {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  width: 7px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 5;
+}
+.sheet-resize:hover {
+  background: var(--accent);
+  opacity: 0.6;
+}
+
+/* 尊重用户的减弱动效偏好 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   透明辅助窗口（后台录制悬浮球 / 字幕悬浮窗）
+   这两个窗口由 Electron `transparent: true` 创建，页面背景必须透明，
+   否则会露出 body 的深色底。
+   -------------------------------------------------------------------------- */
+html.sr-floating,
+html.sr-floating body,
+html.sr-floating #root {
+  background: transparent !important;
+}
+html.sr-floating body {
+  overflow: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   轻量模式飘过提醒（#lightfly）
+   窗口铺满屏宽、透明；飘条本体从屏幕右侧外滑到左侧外，动画只动 transform，
+   走合成器不掉帧。文字配色写死（该窗口不挂 data-theme，需在任意壁纸上可读）。
+   -------------------------------------------------------------------------- */
+.lf-track {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 8px;
+  width: 100vw;
+  height: 100vh;
+  padding: 8px 0;
+  overflow: hidden;
+}
+.lf-pill {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 10px;
+  max-width: calc(100vw - 64px);
+  height: 42px;
+  padding: 0 14px 0 12px;
+  margin-right: 18px;
+  border-radius: 999px;
+  background: rgba(10, 10, 22, 0.93);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow:
+    0 20px 44px -24px rgba(0, 0, 0, 0.95),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  color: rgba(244, 244, 255, 0.95);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  /* 初始停在屏幕右侧外；动画从 +100vw 滑到 -100vw（右缘进、左缘出） */
+  transform: translateX(100vw);
+}
+.lf-pill:hover {
+  border-color: rgba(255, 255, 255, 0.34);
+}
+/* 鼠标悬停暂停态：描边加亮 + 轻微上浮，并把滑动停住（等你看清再决定点不点） */
+.lf-paused {
+  animation-play-state: paused;
+  border-color: rgba(124, 92, 255, 0.85);
+  box-shadow:
+    0 22px 48px -22px rgba(0, 0, 0, 0.95),
+    0 0 0 3px rgba(124, 92, 255, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+@keyframes lf-glide {
+  from {
+    transform: translateX(100vw);
+  }
+  to {
+    transform: translateX(-100vw);
+  }
+}
+.lf-badge {
+  flex: none;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(245, 165, 36, 0.18);
+  color: #f5a524;
+  font-size: 12px;
+  font-weight: 700;
+}
+.lf-msg {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 600;
+  color: rgba(244, 244, 255, 0.95);
+}
+/* 已过期任务整条转红，扫一眼就能分辨轻重缓急 */
+.lf-overdue {
+  color: #ff8fa3;
+}
+.lf-when {
+  flex: none;
+  color: rgba(244, 244, 255, 0.55);
+  font-weight: 500;
+}
+.lf-cta {
+  flex: none;
+  padding-left: 4px;
+  color: rgba(244, 244, 255, 0.45);
+  font-size: 12px;
+  font-weight: 500;
+}
+.lf-pill:hover .lf-cta {
+  color: rgba(244, 244, 255, 0.75);
+}
+
+/* 字幕：上一句淡入入场；主行由逐字打印驱动，不再整行闪烁；打字光标只在未定稿时出现 */
+@keyframes sr-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.sr-fade {
+  animation: sr-fade-in 300ms ease-out;
+}
+.sr-caret {
+  display: inline-block;
+  width: 2px;
+  height: 0.86em;
+  margin-left: 3px;
+  vertical-align: -0.08em;
+  background: currentColor;
+  opacity: 0.85;
+  animation: sr-blink 0.9s steps(2, start) infinite;
+}
+@keyframes sr-blink {
+  0%,
+  50% {
+    opacity: 0.85;
+  }
+  50.01%,
+  100% {
+    opacity: 0;
+  }
+}

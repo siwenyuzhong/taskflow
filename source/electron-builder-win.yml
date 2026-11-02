@@ -1,0 +1,55 @@
+appId: com.pengcheng.taskflow
+productName: Sloth
+copyright: Copyright © 2026 Chen Weiyong
+
+directories:
+  output: release
+  buildResources: build
+
+# 注意：这里不能复用 electronDist（那是 macOS 版 Electron），
+# Windows 包必须下载 win32-x64 的 Electron 发行版，走 npmmirror 镜像。
+
+files:
+  - dist/**/*
+  - electron/**/*
+  - package.json
+  - '!**/*.map'
+
+asar: true
+compression: normal
+npmRebuild: false
+
+# 「工作速录」原生依赖 / worker 需解包出 asar：utilityProcess.fork 与原生 .node 加载
+asarUnpack:
+  - node_modules/ffmpeg-static/**
+  - node_modules/sherpa-onnx-node/**
+  - node_modules/sherpa-onnx-*/**
+  - electron/workers/**
+
+# 离线模型（ASR / VAD / 降噪）随包分发，运行时从 resourcesPath/models 读取
+extraResources:
+  - from: resources/models
+    to: models
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: build/icon.png
+  publisherName: Chen Weiyong
+  legalTrademarks: Chen Weiyong
+  artifactName: Sloth-Setup-${version}-${arch}.${ext}
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowElevation: true
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Sloth
+  installerLanguages:
+    - zh_CN
+  language: '2052'
+  artifactName: Sloth-Setup-${version}-${arch}.${ext}
